@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Risk Analysis — GuardianShield</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .risk-hero {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;
+    }
+    .risk-score-circle {
+      width: 120px; height: 120px; border-radius: 50%;
+      border: 4px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; flex-shrink: 0;
+    }
+    .risk-score-circle svg {
+      position: absolute; inset: -4px;
+      width: calc(100% + 8px); height: calc(100% + 8px);
+      transform: rotate(-90deg);
+    }
+    .risk-score-circle svg circle { fill: none; stroke-width: 4; }
+    .circle-bg { stroke: var(--border); }
+    .circle-fill { stroke-dasharray: 339.3; stroke-dashoffset: 339.3; stroke-linecap: round; transition: stroke-dashoffset 1.5s cubic-bezier(0.4,0,0.2,1); }
+    .circle-high { stroke: var(--danger); }
+    .circle-medium { stroke: var(--warn); }
+    .circle-low { stroke: var(--accent); }
+    .score-num { font-family: var(--font-display); font-size: 2rem; font-weight: 800; line-height: 1; }
+    .score-label-small { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .risk-meta { flex: 1; }
+    .risk-meta h2 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 800; }
+    .risk-meta .meta-row { display: flex; gap: 1rem; margin-top: 0.8rem; flex-wrap: wrap; }
+    .meta-chip {
+      font-size: 0.8rem; color: var(--muted);
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+
+    /* Factor rows */
+    .factor-row {
+      display: flex; align-items: center; gap: 1rem;
+      padding: 0.9rem 0; border-bottom: 1px solid rgba(30,38,54,0.6);
+      animation: slideIn 0.4s ease both;
+    }
+    .factor-row:last-child { border-bottom: none; }
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(-10px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+    .factor-icon {
+      width: 36px; height: 36px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; flex-shrink: 0;
+    }
+    .factor-icon.high { background: var(--danger-light); }
+    .factor-icon.medium { background: var(--warn-light); }
+    .factor-icon.low { background: var(--accent-light); }
+    .factor-name { flex: 1; }
+    .factor-name strong { display: block; font-size: 0.9rem; font-weight: 600; }
+    .factor-name span { font-size: 0.8rem; color: var(--muted); }
+    .factor-pill { flex-shrink: 0; }
+    .factor-bar { width: 80px; flex-shrink: 0; }
+    @media(max-width:540px){ .factor-bar { display:none; } }
+
+    /* Summary boxes */
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width:600px){ .summary-grid { grid-template-columns: 1fr; } }
+    .summary-box {
+      background: var(--card2); border: 1px solid var(--border);
+      border-radius: var(--radius-sm); padding: 1rem;
+      text-align: center;
+    }
+    .summary-box-num { font-family: var(--font-display); font-size: 2rem; font-weight: 800; }
+    .summary-box-label { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.2rem; }
+    .summary-box.danger .summary-box-num { color: var(--danger); }
+    .summary-box.warn .summary-box-num { color: var(--warn); }
+    .summary-box.success .summary-box-num { color: var(--accent); }
+
+    /* AI disclaimer */
+    .ai-disclaimer {
+      background: var(--card2); border: 1.5px solid var(--accent);
+      border-radius: var(--radius-sm); padding: 1rem 1.2rem;
+      display: flex; gap: 0.8rem; align-items: flex-start;
+      font-size: 0.85rem; color: var(--muted);
+      margin-top: 1.5rem;
+    }
+    .ai-disclaimer strong { color: var(--accent); display: block; margin-bottom: 0.2rem; font-size: 0.9rem; }
+
+    .back-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      color: var(--muted); text-decoration: none; font-size: 0.85rem;
+      margin-bottom: 1.5rem; transition: color 0.2s;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    .action-bar {
+      display: flex; gap: 0.8rem; margin-top: 1.5rem; flex-wrap: wrap;
+    }
+    .action-bar .btn { flex: 1; justify-content: center; }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none">🛡️ GuardianShield</a>
+    <div class="nav-links">
+      <a href="apply.html">Apply</a>
+      <a href="dashboard.html">Dashboard</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="risk-hero">
+        <div>
+          <div style="display:flex; gap:0.5rem; align-items:center; margin-bottom:0.5rem;">
+            <span class="pill" id="overallPill" style="padding: 0.2rem 0.8rem;">Loading...</span>
+            <span style="font-size:0.8rem; color:var(--muted);" id="appIdLabel">—</span>
+          </div>
+          <div class="risk-meta">
+            <h2 id="applicantName">Loading...</h2>
+            <div class="meta-row">
+              <div class="meta-chip">💼 <span id="metaOccupation">—</span></div>
+              <div class="meta-chip">🏠 <span id="metaHousing">—</span></div>
+              <div class="meta-chip">📅 <span id="metaDate">—</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="risk-score-circle">
+          <svg viewBox="0 0 120 120">
+            <circle class="circle-bg" cx="60" cy="60" r="54"/>
+            <circle class="circle-fill" id="circleFill" cx="60" cy="60" r="54"/>
+          </svg>
+          <div class="score-num" id="scoreNum">0</div>
+          <div class="score-label-small">Risk Score</div>
+        </div>
+      </div>
+
+      <div class="summary-grid">
+        <div class="summary-box danger">
+          <div class="summary-box-num" id="countHigh">0</div>
+          <div class="summary-box-label">🔴 High Risk Flags</div>
+        </div>
+        <div class="summary-box warn">
+          <div class="summary-box-num" id="countMed">0</div>
+          <div class="summary-box-label">🟡 Medium Flags</div>
+        </div>
+        <div class="summary-box success">
+          <div class="summary-box-num" id="countLow">0</div>
+          <div class="summary-box-label">🟢 Clear Factors</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-title">🔍 Factor-by-Factor Breakdown</div>
+      <div id="factorList"></div>
+    </div>
+
+    <div class="ai-disclaimer">
+      <span style="font-size:1.5rem; flex-shrink:0;">⚠️</span>
+      <div>
+        <strong>AI-Generated Report — Human Decision Required</strong>
+        This analysis is produced by an automated system to assist human reviewers. The AI identifies patterns and flags areas of concern but makes no placement or approval decisions. All outcomes are determined by qualified child welfare caseworkers in accordance with applicable law.
+      </div>
+    </div>
+
+    <div class="action-bar">
+      <a href="dashboard.html" class="btn btn-ghost">← Back to Queue</a>
+      <button class="btn" onclick="makeDecision('approved')">✅ Approve Application</button>
+      <button class="btn btn-warn" onclick="makeDecision('info_needed')">🔁 Request More Info</button>
+      <button class="btn btn-danger" onclick="makeDecision('rejected')">❌ Reject Application</button>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Get app from localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    const appId = urlParams.get('id');
+    let apps = JSON.parse(localStorage.getItem('gs_applications') || '[]');
+    let app = apps.find(a => a.id === appId) || apps[0] || getDemoApp();
+
+    function getDemoApp() {
+      return {
+        id: 'GS-DEMO01',
+        name: 'Rajesh Kumar',
+        occupation: 'Sales Executive',
+        income: 28000,
+        dependents: 2,
+        housing: 'rented',
+        legal: 'minor',
+        debt: 'significant',
+        welfare: 'yes',
+        riskScore: 74,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+      };
+    }
+
+    function buildFactors(app) {
+      return [
+        {
+          icon: '💰',
+          name: 'Financial Stability',
+          detail: app.income < 20000 ? 'Income below ₹20,000/month — may struggle with child expenses'
+                  : app.income < 40000 ? 'Income is moderate — marginal for supporting a child'
+                  : 'Income is sufficient for guardianship responsibilities',
+          level: app.income < 20000 ? 'high' : app.income < 40000 ? 'medium' : 'low',
+          score: app.income < 20000 ? 85 : app.income < 40000 ? 55 : 20,
+        },
+        {
+          icon: '⚖️',
+          name: 'Legal History',
+          detail: app.legal === 'pending' ? '⚠️ Pending legal case — requires urgent review'
+                  : app.legal === 'minor' ? 'Minor resolved legal issue on record — flagged for review'
+                  : 'No legal issues found',
+          level: app.legal === 'pending' ? 'high' : app.legal === 'minor' ? 'medium' : 'low',
+          score: app.legal === 'pending' ? 95 : app.legal === 'minor' ? 50 : 10,
+        },
+        {
+          icon: '💳',
+          name: 'Debt & Financial Liability',
+          detail: app.debt === 'significant' ? 'Significant outstanding debt — financial risk to child welfare'
+                  : app.debt === 'minor' ? 'Minor manageable debt — low concern'
+                  : 'No outstanding debt reported',
+          level: app.debt === 'significant' ? 'high' : app.debt === 'minor' ? 'medium' : 'low',
+          score: app.debt === 'significant' ? 80 : app.debt === 'minor' ? 35 : 5,
+        },
+        {
+          icon: '👶',
+          name: 'Child Welfare Complaints',
+          detail: app.welfare === 'yes' ? '🔴 Prior child welfare complaint on record — high priority review'
+                  : 'No child welfare complaints found',
+          level: app.welfare === 'yes' ? 'high' : 'low',
+          score: app.welfare === 'yes' ? 90 : 5,
+        },
+        {
+          icon: '🏠',
+          name: 'Housing Stability',
+          detail: app.housing === 'owned' ? 'Applicant owns their home — stable environment'
+                  : app.housing === 'rented' ? 'Rented accommodation — moderate stability concern'
+                  : app.housing === 'shared' ? 'Shared housing — may not provide adequate privacy for a child'
+                  : 'Family property — stable arrangement',
+          level: app.housing === 'shared' ? 'medium' : app.housing === 'rented' ? 'medium' : 'low',
+          score: app.housing === 'shared' ? 55 : app.housing === 'rented' ? 35 : 15,
+        },
+        {
+          icon: '👨‍👩‍👧',
+          name: 'Existing Dependents',
+          detail: app.dependents > 3 ? `${app.dependents} existing dependents — high household load`
+                  : app.dependents > 1 ? `${app.dependents} dependents — moderate household responsibilities`
+                  : 'Low number of existing dependents — good capacity',
+          level: app.dependents > 3 ? 'high' : app.dependents > 1 ? 'medium' : 'low',
+          score: app.dependents > 3 ? 70 : app.dependents > 1 ? 40 : 10,
+        },
+        {
+          icon: '📋',
+          name: 'References',
+          detail: 'References submitted and cross-checked against records',
+          level: 'low',
+          score: 15,
+        },
+        {
+          icon: '🔒',
+          name: 'Identity Verification',
+          detail: 'Application details consistent — no identity flags',
+          level: 'low',
+          score: 10,
+        },
+      ];
+    }
+
+    function renderPage() {
+      document.getElementById('applicantName').textContent = app.name;
+      document.getElementById('appIdLabel').textContent = app.id;
+      document.getElementById('metaOccupation').textContent = app.occupation || '—';
+      document.getElementById('metaHousing').textContent = capitalize(app.housing || '—');
+      const d = new Date(app.submittedAt);
+      document.getElementById('metaDate').textContent = d.toLocaleDateString('en-IN', {day:'numeric',month:'short',year:'numeric'});
+
+      const score = app.riskScore;
+      const level = score >= 65 ? 'high' : score >= 35 ? 'medium' : 'low';
+      const pillClass = level === 'high' ? 'pill-danger' : level === 'medium' ? 'pill-warn' : 'pill-success';
+      const label = level === 'high' ? '🔴 High Risk' : level === 'medium' ? '🟡 Medium Risk' : '🟢 Low Risk';
+      document.getElementById('overallPill').className = 'pill ' + pillClass;
+      document.getElementById('overallPill').textContent = label;
+
+      // Animate score
+      let cur = 0;
+      const numEl = document.getElementById('scoreNum');
+      const counter = setInterval(() => {
+        cur = Math.min(cur + 2, score);
+        numEl.textContent = cur;
+        if (cur >= score) clearInterval(counter);
+      }, 25);
+
+      // SVG circle
+      setTimeout(() => {
+        const circumference = 2 * Math.PI * 54;
+        const offset = circumference - (score / 100) * circumference;
+        const fill = document.getElementById('circleFill');
+        fill.style.strokeDasharray = circumference;
+        fill.style.strokeDashoffset = offset;
+        fill.className = 'circle-fill circle-' + level;
+      }, 200);
+
+      // Build factors
+      const factors = buildFactors(app);
+      let high=0, med=0, low=0;
+      const list = document.getElementById('factorList');
+      list.innerHTML = '';
+
+      factors.forEach((f, i) => {
+        if (f.level === 'high') high++;
+        else if (f.level === 'medium') med++;
+        else low++;
+
+        const row = document.createElement('div');
+        row.className = 'factor-row';
+        row.style.animationDelay = (i * 0.06) + 's';
+
+        const pillClass = f.level === 'high' ? 'pill-danger' : f.level === 'medium' ? 'pill-warn' : 'pill-success';
+        const pillText = f.level === 'high' ? '🔴 High' : f.level === 'medium' ? '🟡 Medium' : '🟢 Clear';
+        const barClass = f.level === 'high' ? 'high' : f.level === 'medium' ? 'medium' : 'low';
+
+        row.innerHTML = `
+          <div class="factor-icon ${f.level}">${f.icon}</div>
+          <div class="factor-name">
+            <strong>${f.name}</strong>
+            <span>${f.detail}</span>
+          </div>
+          <div class="factor-pill"><span class="pill ${pillClass}">${pillText}</span></div>
+          <div class="factor-bar">
+            <div class="risk-bar-track">
+              <div class="risk-bar-fill ${barClass}" style="width:0%" data-target="${f.score}%"></div>
+            </div>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+
+      document.getElementById('countHigh').textContent = high;
+      document.getElementById('countMed').textContent = med;
+      document.getElementById('countLow').textContent = low;
+
+      // Animate bars
+      setTimeout(() => {
+        document.querySelectorAll('.risk-bar-fill[data-target]').forEach(el => {
+          el.style.width = el.dataset.target;
+        });
+      }, 600);
+    }
+
+    function makeDecision(decision) {
+      const labels = {approved: 'Approved ✅', rejected: 'Rejected ❌', info_needed: 'More Info Requested 🔁'};
+      apps = apps.map(a => a.id === app.id ? {...a, status: decision} : a);
+      localStorage.setItem('gs_applications', JSON.stringify(apps));
+
+      // Also update current app for status page
+      const updated = {...app, status: decision};
+      localStorage.setItem('gs_current_app', JSON.stringify(updated));
+
+      showToast(`Decision recorded: ${labels[decision]}`);
+      setTimeout(() => window.location.href = 'dashboard.html', 1500);
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
+
+    renderPage();
+  </script>
+</body>
+</html>

@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reviewer Dashboard — GuardianShield</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .dash-stats {
+      display: grid; grid-template-columns: repeat(4,1fr); gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    @media(max-width:640px){ .dash-stats { grid-template-columns: 1fr 1fr; } }
+    .stat-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem;
+    }
+    .stat-card-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 0.5rem; }
+    .stat-card-num { font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; line-height: 1; }
+    .stat-card-sub { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    .filter-bar {
+      display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; align-items: center;
+    }
+    .filter-btn {
+      background: var(--card2); border: 1.5px solid var(--border);
+      color: var(--muted); border-radius: 999px;
+      padding: 0.3rem 0.9rem; font-size: 0.8rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: var(--font-body);
+    }
+    .filter-btn:hover { border-color: var(--accent); color: var(--text); }
+    .filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; }
+
+    .search-box {
+      background: var(--card2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.45rem 0.9rem;
+      color: var(--text); font-family: var(--font-body); font-size: 0.85rem;
+      outline: none; width: 200px; margin-left: auto;
+      transition: border-color 0.2s;
+    }
+    .search-box:focus { border-color: var(--accent); }
+
+    /* Application cards */
+    .app-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.2rem;
+      margin-bottom: 0.75rem; cursor: pointer;
+      transition: all 0.2s; position: relative;
+      display: flex; align-items: center; gap: 1rem;
+    }
+    .app-card:hover { border-color: rgba(0,168,107,0.3); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+    .app-card.high { border-left: 3px solid var(--danger); }
+    .app-card.medium { border-left: 3px solid var(--warn); }
+    .app-card.low { border-left: 3px solid var(--accent); }
+
+    .app-avatar {
+      width: 44px; height: 44px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 800; font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .app-avatar.high { background: var(--danger-light); color: var(--danger); }
+    .app-avatar.medium { background: var(--warn-light); color: var(--warn); }
+    .app-avatar.low { background: var(--accent-light); color: var(--accent); }
+
+    .app-info { flex: 1; min-width: 0; }
+    .app-info h3 { font-weight: 700; font-size: 0.95rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .app-info-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.3rem; }
+    .app-info-chip { font-size: 0.78rem; color: var(--muted); display: flex; align-items: center; gap: 0.25rem; }
+
+    .app-score { flex-shrink: 0; text-align: center; }
+    .app-score-num { font-family: var(--font-display); font-size: 1.6rem; font-weight: 800; line-height: 1; }
+    .app-score-label { font-size: 0.65rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .app-actions { flex-shrink: 0; display: flex; gap: 0.5rem; }
+    @media(max-width:700px){ .app-actions { display:none; } }
+
+    .empty-state {
+      text-align: center; padding: 4rem 2rem;
+      color: var(--muted);
+    }
+    .empty-state div:first-child { font-size: 3rem; margin-bottom: 1rem; }
+
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-header h2 {
+      font-family: var(--font-display); font-size: 1.1rem; font-weight: 700;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none">🛡️ GuardianShield</a>
+    <div class="nav-links">
+      <a href="apply.html">New Application</a>
+    </div>
+  </nav>
+
+  <main class="page-wide">
+    <div class="page-header">
+      <h1>Reviewer Dashboard</h1>
+      <p>Human caseworker panel — AI flags are advisory only. You make every decision.</p>
+    </div>
+
+    <!-- Stats -->
+    <div class="dash-stats">
+      <div class="stat-card">
+        <div class="stat-card-label">Total Applications</div>
+        <div class="stat-card-num" id="statTotal">0</div>
+        <div class="stat-card-sub">All time</div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid var(--warn)">
+        <div class="stat-card-label">Pending Review</div>
+        <div class="stat-card-num" style="color:var(--warn)" id="statPending">0</div>
+        <div class="stat-card-sub">Awaiting decision</div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid var(--danger)">
+        <div class="stat-card-label">High Risk Flagged</div>
+        <div class="stat-card-num" style="color:var(--danger)" id="statHigh">0</div>
+        <div class="stat-card-sub">Score ≥ 65</div>
+      </div>
+      <div class="stat-card" style="border-left:3px solid var(--accent)">
+        <div class="stat-card-label">Approved</div>
+        <div class="stat-card-num" style="color:var(--accent)" id="statApproved">0</div>
+        <div class="stat-card-sub">This session</div>
+      </div>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All</button>
+      <button class="filter-btn" onclick="setFilter('pending',this)">⏳ Pending</button>
+      <button class="filter-btn" onclick="setFilter('high',this)">🔴 High Risk</button>
+      <button class="filter-btn" onclick="setFilter('approved',this)">✅ Approved</button>
+      <button class="filter-btn" onclick="setFilter('rejected',this)">❌ Rejected</button>
+      <input class="search-box" type="text" placeholder="🔍 Search applicant..." id="searchBox" oninput="renderList()"/>
+    </div>
+
+    <!-- List -->
+    <div class="section-header">
+      <h2>📋 Applications Queue <span id="countLabel" style="font-size:0.8rem; font-weight:500; color:var(--muted)"></span></h2>
+      <button class="btn btn-ghost btn-sm" onclick="addDemoApp()">+ Add Demo Application</button>
+    </div>
+
+    <div id="appList"></div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    let currentFilter = 'all';
+
+    // Seed demo data if empty
+    function seedDemoData() {
+      const demos = [
+        { id:'GS-DEMO01', name:'Rajesh Kumar', occupation:'Sales Executive', income:28000, dependents:2, housing:'rented', legal:'minor', debt:'significant', welfare:'yes', riskScore:74, status:'pending', submittedAt: new Date(Date.now()-2*3600000).toISOString() },
+        { id:'GS-DEMO02', name:'Meera Nair', occupation:'School Principal', income:75000, dependents:1, housing:'owned', legal:'none', debt:'no', welfare:'none', riskScore:18, status:'pending', submittedAt: new Date(Date.now()-5*3600000).toISOString() },
+        { id:'GS-DEMO03', name:'Arun Patel', occupation:'Auto Driver', income:15000, dependents:4, housing:'shared', legal:'pending', debt:'significant', welfare:'none', riskScore:89, status:'pending', submittedAt: new Date(Date.now()-8*3600000).toISOString() },
+        { id:'GS-DEMO04', name:'Sunita Verma', occupation:'Nurse', income:42000, dependents:1, housing:'rented', legal:'none', debt:'minor', welfare:'none', riskScore:32, status:'approved', submittedAt: new Date(Date.now()-24*3600000).toISOString() },
+        { id:'GS-DEMO05', name:'Vikram Singh', occupation:'IT Engineer', income:90000, dependents:0, housing:'owned', legal:'none', debt:'no', welfare:'none', riskScore:12, status:'approved', submittedAt: new Date(Date.now()-30*3600000).toISOString() },
+      ];
+      localStorage.setItem('gs_applications', JSON.stringify(demos));
+      return demos;
+    }
+
+    function getApps() {
+      const data = localStorage.getItem('gs_applications');
+      if (!data) return seedDemoData();
+      const apps = JSON.parse(data);
+      if (apps.length === 0) return seedDemoData();
+      return apps;
+    }
+
+    function getRiskLevel(score) {
+      return score >= 65 ? 'high' : score >= 35 ? 'medium' : 'low';
+    }
+
+    function capitalize(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : '—'; }
+
+    function renderStats(apps) {
+      document.getElementById('statTotal').textContent = apps.length;
+      document.getElementById('statPending').textContent = apps.filter(a => a.status === 'pending').length;
+      document.getElementById('statHigh').textContent = apps.filter(a => a.riskScore >= 65).length;
+      document.getElementById('statApproved').textContent = apps.filter(a => a.status === 'approved').length;
+    }
+
+    function setFilter(f, el) {
+      currentFilter = f;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      renderList();
+    }
+
+    function renderList() {
+      const apps = getApps();
+      renderStats(apps);
+
+      const search = document.getElementById('searchBox').value.toLowerCase();
+      let filtered = apps.filter(a => {
+        const matchSearch = !search || a.name.toLowerCase().includes(search) || a.id.toLowerCase().includes(search);
+        const level = getRiskLevel(a.riskScore);
+        const matchFilter =
+          currentFilter === 'all' ||
+          (currentFilter === 'pending' && a.status === 'pending') ||
+          (currentFilter === 'high' && level === 'high') ||
+          (currentFilter === 'approved' && a.status === 'approved') ||
+          (currentFilter === 'rejected' && a.status === 'rejected');
+        return matchSearch && matchFilter;
+      });
+
+      const list = document.getElementById('appList');
+      document.getElementById('countLabel').textContent = `(${filtered.length})`;
+
+      if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty-state"><div>📭</div><div>No applications match this filter</div></div>`;
+        return;
+      }
+
+      // Sort: pending first, then by score desc
+      filtered.sort((a,b) => {
+        if (a.status === 'pending' && b.status !== 'pending') return -1;
+        if (a.status !== 'pending' && b.status === 'pending') return 1;
+        return b.riskScore - a.riskScore;
+      });
+
+      list.innerHTML = filtered.map(app => {
+        const level = getRiskLevel(app.riskScore);
+        const initials = app.name.split(' ').map(n=>n[0]).join('').substring(0,2).toUpperCase();
+        const d = new Date(app.submittedAt);
+        const timeAgo = getTimeAgo(d);
+
+        const statusPill = app.status === 'approved'
+          ? '<span class="pill pill-success">✅ Approved</span>'
+          : app.status === 'rejected'
+          ? '<span class="pill pill-danger">❌ Rejected</span>'
+          : app.status === 'info_needed'
+          ? '<span class="pill pill-info">🔁 Info Needed</span>'
+          : '<span class="pill pill-warn">⏳ Pending</span>';
+
+        const riskColor = level === 'high' ? 'var(--danger)' : level === 'medium' ? 'var(--warn)' : 'var(--accent)';
+
+        return `
+          <div class="app-card ${level}" onclick="viewApp('${app.id}')">
+            <div class="app-avatar ${level}">${initials}</div>
+            <div class="app-info">
+              <h3>${app.name}</h3>
+              <div class="app-info-row">
+                <div class="app-info-chip">💼 ${app.occupation || '—'}</div>
+                <div class="app-info-chip">🏠 ${capitalize(app.housing)}</div>
+                <div class="app-info-chip">📅 ${timeAgo}</div>
+                <div class="app-info-chip">${statusPill}</div>
+              </div>
+            </div>
+            <div class="app-score">
+              <div class="app-score-num" style="color:${riskColor}">${app.riskScore}</div>
+              <div class="app-score-label">Risk Score</div>
+            </div>
+            <div class="app-actions">
+              ${app.status === 'pending' ? `
+                <button class="btn btn-sm" onclick="event.stopPropagation(); quickDecision('${app.id}','approved')">✅</button>
+                <button class="btn btn-warn btn-sm" onclick="event.stopPropagation(); quickDecision('${app.id}','info_needed')">🔁</button>
+                <button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); quickDecision('${app.id}','rejected')">❌</button>
+              ` : `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation(); viewApp('${app.id}')">View →</button>`}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function viewApp(id) {
+      window.location.href = 'risk.html?id=' + id;
+    }
+
+    function quickDecision(id, decision) {
+      const apps = getApps().map(a => a.id === id ? {...a, status: decision} : a);
+      localStorage.setItem('gs_applications', JSON.stringify(apps));
+      const labels = {approved:'Approved ✅', rejected:'Rejected ❌', info_needed:'More Info Requested 🔁'};
+      showToast('Decision: ' + labels[decision]);
+      renderList();
+    }
+
+    function addDemoApp() {
+      const names = ['Lakshmi Pillai','Deepak Sharma','Kavitha Menon','Suresh Babu','Ananya Krishnan'];
+      const jobs = ['Teacher','Driver','Nurse','Engineer','Shopkeeper'];
+      const apps = getApps();
+      const name = names[Math.floor(Math.random()*names.length)];
+      const income = Math.floor(Math.random()*80000)+15000;
+      const legal = ['none','none','minor','pending'][Math.floor(Math.random()*4)];
+      const debt = ['no','no','minor','significant'][Math.floor(Math.random()*4)];
+      let score = 15;
+      if (income < 25000) score += 25; else if (income < 45000) score += 10;
+      if (legal === 'pending') score += 35; else if (legal === 'minor') score += 15;
+      if (debt === 'significant') score += 20; else if (debt === 'minor') score += 8;
+      score = Math.min(98, score + Math.floor(Math.random()*15));
+
+      const newApp = {
+        id: 'GS-' + Math.random().toString(36).substr(2,6).toUpperCase(),
+        name, occupation: jobs[Math.floor(Math.random()*jobs.length)],
+        income, dependents: Math.floor(Math.random()*4),
+        housing: ['owned','rented','shared','family'][Math.floor(Math.random()*4)],
+        legal, debt, welfare: 'none',
+        riskScore: score, status: 'pending',
+        submittedAt: new Date().toISOString(),
+      };
+      apps.unshift(newApp);
+      localStorage.setItem('gs_applications', JSON.stringify(apps));
+      showToast('New application added: ' + name);
+      renderList();
+    }
+
+    function getTimeAgo(d) {
+      const diff = Date.now() - d.getTime();
+      const mins = Math.floor(diff/60000);
+      const hours = Math.floor(diff/3600000);
+      if (mins < 2) return 'just now';
+      if (mins < 60) return mins + 'm ago';
+      if (hours < 24) return hours + 'h ago';
+      return Math.floor(hours/24) + 'd ago';
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 3000);
+    }
+
+    renderList();
+  </script>
+</body>
+</html>

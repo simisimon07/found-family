@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Apply — GuardianShield</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .form-section {
+      margin-bottom: 2rem;
+    }
+    .form-section-title {
+      font-family: var(--font-display);
+      font-size: 0.8rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      color: var(--accent); margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .form-section-title::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .radio-group { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .radio-option {
+      flex: 1; min-width: 120px;
+      background: var(--card2); border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm); padding: 0.7rem 1rem;
+      cursor: pointer; transition: all 0.2s;
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 0.9rem;
+    }
+    .radio-option input { display: none; }
+    .radio-option:has(input:checked),
+    .radio-option.selected {
+      border-color: var(--accent);
+      background: var(--accent-light);
+      color: var(--accent);
+    }
+    .radio-dot {
+      width: 14px; height: 14px; border-radius: 50%;
+      border: 2px solid currentColor; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .radio-dot::after {
+      content: ''; width: 6px; height: 6px;
+      border-radius: 50%; background: currentColor;
+      opacity: 0; transition: opacity 0.2s;
+    }
+    .radio-option.selected .radio-dot::after { opacity: 1; }
+
+    .disclaimer-box {
+      background: var(--accent-light);
+      border: 1px solid rgba(0,168,107,0.25);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.2rem; font-size: 0.85rem;
+      color: var(--muted); margin-bottom: 1.5rem;
+      display: flex; gap: 0.8rem;
+    }
+    .disclaimer-box span:first-child { font-size: 1.2rem; flex-shrink: 0; }
+
+    .submit-area { text-align: center; padding-top: 0.5rem; }
+    .submit-area p { font-size: 0.8rem; color: var(--muted); margin-top: 0.8rem; }
+
+    /* Progress steps */
+    .steps {
+      display: flex; align-items: center; justify-content: center;
+      gap: 0; margin-bottom: 2.5rem;
+    }
+    .step {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; font-weight: 600;
+    }
+    .step-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--card2); border: 1.5px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; font-weight: 700; color: var(--muted);
+    }
+    .step.active .step-num {
+      background: var(--accent); border-color: var(--accent); color: white;
+    }
+    .step-label { color: var(--muted); }
+    .step.active .step-label { color: var(--text); }
+    .step-line {
+      width: 60px; height: 1px; background: var(--border); margin: 0 0.5rem;
+    }
+    @media (max-width: 600px) { .step-label { display: none; } .step-line { width: 30px; } }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="nav-brand" style="text-decoration:none">🛡️ GuardianShield</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="dashboard.html">Admin</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <div class="page-header">
+      <h1>Guardian Application</h1>
+      <p>Complete all sections carefully. All information is verified before review.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step active"><div class="step-num">1</div><span class="step-label">Personal Info</span></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-num">2</div><span class="step-label">Financial</span></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-num">3</div><span class="step-label">Background</span></div>
+      <div class="step-line"></div>
+      <div class="step active"><div class="step-num">4</div><span class="step-label">References</span></div>
+    </div>
+
+    <div class="card">
+      <form id="applicationForm">
+
+        <!-- PERSONAL INFO -->
+        <div class="form-section">
+          <div class="form-section-title">👤 Personal Information</div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Full Name *</label>
+              <input class="form-input" type="text" id="fullName" placeholder="e.g. Priya Sharma" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date of Birth *</label>
+              <input class="form-input" type="date" id="dob" required/>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Occupation *</label>
+              <input class="form-input" type="text" id="occupation" placeholder="e.g. Teacher" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input class="form-input" type="tel" id="phone" placeholder="+91 98765 43210" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Address *</label>
+            <input class="form-input" type="email" id="email" placeholder="you@example.com" required/>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Residential Address *</label>
+            <textarea class="form-textarea" id="address" placeholder="Full address including city and PIN code" rows="2" required></textarea>
+          </div>
+        </div>
+
+        <!-- HOUSING & FINANCIAL -->
+        <div class="form-section">
+          <div class="form-section-title">🏠 Housing & Financial Status</div>
+          <div class="form-group">
+            <label class="form-label">Housing Type *</label>
+            <div class="radio-group" id="housingGroup">
+              <label class="radio-option" onclick="selectRadio(this,'housingGroup')">
+                <input type="radio" name="housing" value="owned"/>
+                <div class="radio-dot"></div> Owned
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'housingGroup')">
+                <input type="radio" name="housing" value="rented"/>
+                <div class="radio-dot"></div> Rented
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'housingGroup')">
+                <input type="radio" name="housing" value="shared"/>
+                <div class="radio-dot"></div> Shared
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'housingGroup')">
+                <input type="radio" name="housing" value="family"/>
+                <div class="radio-dot"></div> Family Property
+              </label>
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Monthly Income (₹) *</label>
+              <input class="form-input" type="number" id="income" placeholder="e.g. 45000" min="0" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Number of Dependents</label>
+              <input class="form-input" type="number" id="dependents" placeholder="e.g. 2" min="0" value="0"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Any outstanding debts or loans?</label>
+            <div class="radio-group" id="debtGroup">
+              <label class="radio-option" onclick="selectRadio(this,'debtGroup')">
+                <input type="radio" name="debt" value="no"/>
+                <div class="radio-dot"></div> No
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'debtGroup')">
+                <input type="radio" name="debt" value="minor"/>
+                <div class="radio-dot"></div> Minor (manageable)
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'debtGroup')">
+                <input type="radio" name="debt" value="significant"/>
+                <div class="radio-dot"></div> Significant
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- BACKGROUND -->
+        <div class="form-section">
+          <div class="form-section-title">🔍 Background Declaration</div>
+          <div class="form-group">
+            <label class="form-label">Prior legal issues or complaints? *</label>
+            <div class="radio-group" id="legalGroup">
+              <label class="radio-option" onclick="selectRadio(this,'legalGroup')">
+                <input type="radio" name="legal" value="none"/>
+                <div class="radio-dot"></div> None
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'legalGroup')">
+                <input type="radio" name="legal" value="minor"/>
+                <div class="radio-dot"></div> Minor (resolved)
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'legalGroup')">
+                <input type="radio" name="legal" value="pending"/>
+                <div class="radio-dot"></div> Pending
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Previous child welfare complaints?</label>
+            <div class="radio-group" id="welfarGroup">
+              <label class="radio-option" onclick="selectRadio(this,'welfarGroup')">
+                <input type="radio" name="welfare" value="none"/>
+                <div class="radio-dot"></div> None
+              </label>
+              <label class="radio-option" onclick="selectRadio(this,'welfarGroup')">
+                <input type="radio" name="welfare" value="yes"/>
+                <div class="radio-dot"></div> Yes (provide details)
+              </label>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Motivation for becoming a guardian *</label>
+            <textarea class="form-textarea" id="motivation" placeholder="Please describe your reasons and any relevant experience with children..." required></textarea>
+          </div>
+        </div>
+
+        <!-- REFERENCES -->
+        <div class="form-section">
+          <div class="form-section-title">📋 References</div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Reference 1 — Name *</label>
+              <input class="form-input" type="text" id="ref1name" placeholder="Full name" required/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reference 1 — Relationship *</label>
+              <input class="form-input" type="text" id="ref1rel" placeholder="e.g. Former employer" required/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Reference 1 — Phone / Email</label>
+            <input class="form-input" type="text" id="ref1contact" placeholder="Contact details"/>
+          </div>
+          <div class="grid-2">
+            <div class="form-group">
+              <label class="form-label">Reference 2 — Name</label>
+              <input class="form-input" type="text" id="ref2name" placeholder="Full name"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Reference 2 — Relationship</label>
+              <input class="form-input" type="text" id="ref2rel" placeholder="e.g. Neighbour"/>
+            </div>
+          </div>
+        </div>
+
+        <div class="disclaimer-box">
+          <span>🔒</span>
+          <span>I confirm that all information provided is accurate. I consent to background verification checks. I understand that an AI system will assist in flagging potential risk areas, but all final decisions are made by qualified human reviewers.</span>
+        </div>
+
+        <div class="submit-area">
+          <button type="submit" class="btn" style="padding: 0.85rem 3rem; font-size: 1rem;">
+            Submit Application →
+          </button>
+          <p>Your application ID will be provided after submission</p>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <!-- Processing overlay -->
+  <div id="processingOverlay" style="display:none; position:fixed; inset:0; background:rgba(10,13,18,0.92); z-index:200; flex-direction:column; align-items:center; justify-content:center; gap:1.5rem;">
+    <div class="spinner"></div>
+    <div style="font-family:var(--font-display); font-size:1.3rem; font-weight:700;" id="processingText">Submitting Application...</div>
+    <div style="color:var(--muted); font-size:0.9rem;" id="processingSubtext">Please wait</div>
+  </div>
+
+  <style>
+    .spinner {
+      width: 56px; height: 56px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+
+  <script>
+    function selectRadio(el, groupId) {
+      document.querySelectorAll(`#${groupId} .radio-option`).forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+
+    document.getElementById('applicationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const housing = document.querySelector('input[name="housing"]:checked');
+      const legal = document.querySelector('input[name="legal"]:checked');
+      const debt = document.querySelector('input[name="debt"]:checked');
+      const welfare = document.querySelector('input[name="welfare"]:checked');
+
+      if (!housing || !legal || !debt) {
+        alert('Please answer all required questions.');
+        return;
+      }
+
+      // Compute a risk score
+      const income = parseInt(document.getElementById('income').value) || 0;
+      const dependents = parseInt(document.getElementById('dependents').value) || 0;
+      let score = 20;
+
+      if (income < 20000) score += 30;
+      else if (income < 40000) score += 15;
+      else if (income < 60000) score += 5;
+
+      if (legal.value === 'pending') score += 35;
+      else if (legal.value === 'minor') score += 15;
+
+      if (debt.value === 'significant') score += 20;
+      else if (debt.value === 'minor') score += 8;
+
+      if (welfare && welfare.value === 'yes') score += 25;
+      if (housing.value === 'shared') score += 10;
+      if (dependents > 3) score += 10;
+
+      score = Math.min(score, 98);
+
+      const appData = {
+        id: 'GS-' + Math.random().toString(36).substr(2,6).toUpperCase(),
+        name: document.getElementById('fullName').value,
+        occupation: document.getElementById('occupation').value,
+        income,
+        dependents,
+        housing: housing.value,
+        legal: legal.value,
+        debt: debt.value,
+        welfare: welfare ? welfare.value : 'none',
+        motivation: document.getElementById('motivation').value,
+        ref1: {
+          name: document.getElementById('ref1name').value,
+          rel: document.getElementById('ref1rel').value,
+          contact: document.getElementById('ref1contact').value,
+        },
+        riskScore: score,
+        status: 'pending',
+        submittedAt: new Date().toISOString(),
+      };
+
+      // Save to localStorage
+      const apps = JSON.parse(localStorage.getItem('gs_applications') || '[]');
+      apps.unshift(appData);
+      localStorage.setItem('gs_applications', JSON.stringify(apps));
+      localStorage.setItem('gs_current_app', JSON.stringify(appData));
+      const blob = new Blob([JSON.stringify(appData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = appData.id + '_application.json';
+      a.click();  
+      URL.revokeObjectURL(url);
+      // Show processing animation
+      const overlay = document.getElementById('processingOverlay');
+      const pText = document.getElementById('processingText');
+      const pSub = document.getElementById('processingSubtext');
+      overlay.style.display = 'flex';
+
+      const steps = [
+        ['Submitting Application...', 'Uploading your information securely'],
+        ['Running AI Analysis...', 'Scanning risk indicators across 12 factors'],
+        ['Generating Risk Report...', 'Flagging items for human reviewer'],
+        ['Application Received ✓', 'Redirecting to your status page...'],
+      ];
+
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i < steps.length) {
+          pText.textContent = steps[i][0];
+          pSub.textContent = steps[i][1];
+          i++;
+        } else {
+          clearInterval(interval);
+          window.location.href = 'status.html';
+        }
+      }, 900);
+    });
+  </script>
+</body>
+</html>
