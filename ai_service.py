@@ -1,13 +1,33 @@
-import google.generativeai as genai
 import json
 import os
+import logging
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# Configure Gemini API
-GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
-genai.configure(api_key=GEMINI_API_KEY)
+logger = logging.getLogger(__name__)
+
+
+def _get_genai():
+    """Lazily import and configure google.generativeai.
+
+    This avoids import-time side-effects that can break deployments
+    (e.g. when the Python runtime is incompatible). It also centralizes
+    API key validation.
+    """
+    try:
+        import google.generativeai as genai
+    except Exception:
+        logger.exception('Failed to import google.generativeai')
+        raise
+
+    api_key = os.getenv('GEMINI_API_KEY') or os.getenv('GOOGLE_API_KEY')
+    if not api_key:
+        raise RuntimeError('GEMINI_API_KEY or GOOGLE_API_KEY environment variable is required')
+
+    genai.configure(api_key=api_key)
+    return genai
+
 
 class AIRiskAssessment:
     """Uses Gemini AI to provide intelligent risk assessment for guardian applications."""
@@ -24,6 +44,7 @@ class AIRiskAssessment:
             Dictionary with risk_score, risk_level, risk_factors, and ai_assessment
         """
         try:
+            genai = _get_genai()
             model = genai.GenerativeModel('gemini-pro')
             
             # Prepare the prompt with application data
@@ -107,6 +128,7 @@ class AIMatching:
             Dictionary with matches sorted by compatibility score
         """
         try:
+            genai = _get_genai()
             model = genai.GenerativeModel('gemini-pro')
             
             # Prepare children data for the prompt
@@ -198,6 +220,7 @@ Return ONLY valid JSON, no additional text."""
             Dictionary with detailed match analysis
         """
         try:
+            genai = _get_genai()
             model = genai.GenerativeModel('gemini-pro')
             
             prompt = f"""You are an expert child welfare specialist. Provide a detailed compatibility analysis for the following child-applicant pairing.
