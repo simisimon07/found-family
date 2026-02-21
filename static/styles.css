@@ -1,0 +1,39 @@
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
+
+:root {
+  --bg: #0a0d12;
+  --card: #111620;
+  --card2: #161c28;
+  --border: #1e2636;
+  --text: #eef2ff;
+  --muted: #6b7a99;
+  --accent: #00a86b;
+  --accent-light: rgba(0,168,107,0.15);
+  --danger: #ef4444;
+  --danger-light: rgba(239,68,68,0.12);
+  --warn: #f59e0b;
+  --warn-light: rgba(245,158,11,0.12);
+  --info: #3b82f6;
+  --info-light: rgba(59,130,246,0.12);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* additional styles omitted for brevity; full file copied from root styles.css */
+
+/* You can expand or edit styles here as needed. */

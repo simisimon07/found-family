@@ -28,6 +28,22 @@ with app.app_context():
     db.create_all()
 
 
+# Serve frontend static files (SPA fallback)
+from flask import send_from_directory
+
+
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def serve_frontend(path):
+    static_dir = os.path.join(app.root_path, 'static')
+    # If the requested file exists in static, serve it directly
+    full_path = os.path.join(static_dir, path)
+    if path and os.path.exists(full_path):
+        return send_from_directory(static_dir, path)
+    # Otherwise serve index.html (SPA fallback)
+    return send_from_directory(static_dir, 'index.html')
+
+
 # ============= UTILITY FUNCTIONS =============
 
 def calculate_age(birth_date):
