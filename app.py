@@ -38,6 +38,10 @@ def serve_frontend(path):
     static_dir = os.path.join(app.root_path, 'static')
     # If the requested file exists in static, serve it directly
     full_path = os.path.join(static_dir, path)
+    # Handle requests that include the 'static/' prefix
+    if path.startswith('static/'):
+        rel_path = path.split('static/', 1)[1]
+        return send_from_directory(static_dir, rel_path)
     if path and os.path.exists(full_path):
         return send_from_directory(static_dir, path)
     # Otherwise serve index.html (SPA fallback)
