@@ -448,6 +448,9 @@ PORT=8000 python app.py
 ## scrn shots 
 
 ![alt text](adminss.png) ![alt text](applicationreceivedss.png) ![alt text](applicationss.png) ![alt text](frontpagess.png)
+
+##demo vedio
+https://drive.google.com/drive/folders/1DKo5_080J5W7L23MJk6ieprygXIFE_3U?usp=drive_link
 ## 📚 Additional Resources
 
 - [Flask Documentation](https://flask.palletsprojects.com/)
