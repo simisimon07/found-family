@@ -445,7 +445,9 @@ PORT=8000 python app.py
 - Reinitialize: `python -c "from app import app; from models import db; with app.app_context(): db.create_all()"`
 
 ---
+## scrn shots 
 
+![alt text](adminss.png) ![alt text](applicationreceivedss.png) ![alt text](applicationss.png) ![alt text](frontpagess.png)
 ## 📚 Additional Resources
 
 - [Flask Documentation](https://flask.palletsprojects.com/)
