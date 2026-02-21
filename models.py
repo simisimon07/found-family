@@ -157,3 +157,78 @@ class Match(db.Model):
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
+
+
+class PsychologicalAssessment(db.Model):
+    __tablename__ = 'psychological_assessments'
+    
+    id = db.Column(db.String(50), primary_key=True, default=lambda: 'PA-' + str(uuid.uuid4())[:8].upper())
+    application_id = db.Column(db.String(50), db.ForeignKey('applications.id'), nullable=False, unique=True)
+    
+    # Assessment Responses (15 questions max)
+    q1_emotional_control = db.Column(db.String(10))  # 1-5 scale
+    q2_stress_management = db.Column(db.String(10))
+    q3_anger_issues = db.Column(db.String(10))
+    q4_substance_use = db.Column(db.String(10))
+    q5_alcohol_dependency = db.Column(db.String(10))
+    q6_prescription_misuse = db.Column(db.String(10))
+    q7_violence_tendency = db.Column(db.String(10))
+    q8_physical_abuse = db.Column(db.String(10))
+    q9_emotional_abuse = db.Column(db.String(10))
+    q10_verbal_abuse = db.Column(db.String(10))
+    q11_psychological_history = db.Column(db.String(10))
+    q12_mental_health_treatment = db.Column(db.String(10))
+    q13_emotional_stability = db.Column(db.String(10))
+    q14_impulse_control = db.Column(db.String(10))
+    q15_patience_with_children = db.Column(db.String(10))
+    
+    # Overall Assessment Results
+    total_score = db.Column(db.Float, default=0)
+    risk_level = db.Column(db.String(20))  # low, medium, high (based on scores)
+    toxicity_score = db.Column(db.Float, default=0)
+    substance_abuse_score = db.Column(db.Float, default=0)
+    violence_score = db.Column(db.Float, default=0)
+    mental_health_score = db.Column(db.Float, default=0)
+    
+    # Detailed Analysis Report
+    analysis_report = db.Column(db.Text)  # JSON or formatted text
+    recommendations = db.Column(db.Text)
+    red_flags = db.Column(db.Text)  # JSON array
+    protective_factors = db.Column(db.Text)  # JSON array
+    
+    # Meta
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'application_id': self.application_id,
+            'q1_emotional_control': self.q1_emotional_control,
+            'q2_stress_management': self.q2_stress_management,
+            'q3_anger_issues': self.q3_anger_issues,
+            'q4_substance_use': self.q4_substance_use,
+            'q5_alcohol_dependency': self.q5_alcohol_dependency,
+            'q6_prescription_misuse': self.q6_prescription_misuse,
+            'q7_violence_tendency': self.q7_violence_tendency,
+            'q8_physical_abuse': self.q8_physical_abuse,
+            'q9_emotional_abuse': self.q9_emotional_abuse,
+            'q10_verbal_abuse': self.q10_verbal_abuse,
+            'q11_psychological_history': self.q11_psychological_history,
+            'q12_mental_health_treatment': self.q12_mental_health_treatment,
+            'q13_emotional_stability': self.q13_emotional_stability,
+            'q14_impulse_control': self.q14_impulse_control,
+            'q15_patience_with_children': self.q15_patience_with_children,
+            'total_score': self.total_score,
+            'risk_level': self.risk_level,
+            'toxicity_score': self.toxicity_score,
+            'substance_abuse_score': self.substance_abuse_score,
+            'violence_score': self.violence_score,
+            'mental_health_score': self.mental_health_score,
+            'analysis_report': self.analysis_report,
+            'recommendations': self.recommendations,
+            'red_flags': self.red_flags,
+            'protective_factors': self.protective_factors,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }

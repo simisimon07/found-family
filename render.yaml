@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: found-family
+    env: python
+    region: oregon
+    plan: free
+    rootDir: .
+    buildCommand: pip install -r requirements.txt && python -c "from app import app; from models import db; 
+      with app.app_context(): db.create_all()"
+    startCommand: python app.py
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11
+      - key: DATABASE_URL
+        value: sqlite:///guardian_shield.db
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 8000
